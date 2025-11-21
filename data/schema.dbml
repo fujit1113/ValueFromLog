@@ -1,0 +1,166 @@
+Project iot_ops_combined_v2 {
+  database_type: "PostgreSQL"
+  Note: 'Combined DBML (v2): fixed composite PK syntax for better VS Code preview compatibility.'
+}
+
+/* =====================================
+   Enums (shared)
+   ===================================== */
+Enum control_result {
+  success
+  failure
+}
+
+Enum alive_status {
+  online
+  offline
+  unknown
+}
+
+Enum message_name {
+  equipmentStatusIndication
+  aliveStatusIndication
+}
+
+/* =====================================
+   CONTROL LOGS
+   ===================================== */
+Table public.equipment_control_logs {
+  Id                        uuid            [pk, not null, note: 'ログID']
+  BuildingId                varchar(64)     [not null, note: '建物ID']
+  ContractId                varchar(64)     [not null, note: '契約ID']
+  OrderId                   uuid            [not null, note: '受注/オーダID']
+  OrderReceiptDate          timestamptz     [not null, note: '受信日時']
+  TimerDiv                  smallint        [not null, default: 0, note: '0/1/2']
+  TimerSetDate              timestamptz
+  ServiceTypeId             int             [not null]
+  BulkEquipmentTypeId       int
+  SetMemberId               varchar(64)
+  FloorCode                 varchar(8)
+  RoomNo                    varchar(16)
+  RoomNumber                int
+  RoomName                  text
+  EquipmentTypeId           text
+  GroupId                   int
+  EquipmentId               int
+  EdgeManagedEquipmentId    text
+  EquipmentName             text
+  Maker                     text
+  ModelNumber               text
+  SerialNo                  text
+  FirmwareVersion           text
+  IpAddress                 text
+  PeerId                    text
+  PeerIdBranch              text
+  PropertyCode              text
+  PropertyType              smallint
+  PropertyName              text
+  PropertyValue             text
+  PropertyDescription       text
+  CompleteDate              timestamptz
+  ControlResult             control_result
+  ErrorCode                 int
+  ErrorReason               text
+  CreatedDate               timestamptz     [not null, default: `now()`]
+  UpdatedDate               timestamptz     [not null, default: `now()`]
+  IsDelete                  boolean         [not null, default: false]
+  DeletedDate               timestamptz
+
+  Note: '設備制御のプロパティ履歴・タイマー設定ログ'
+  indexes {
+    (BuildingId, CompleteDate) [name: 'ecl_building_completed_idx']
+    (OrderId)                  [name: 'ecl_order_idx']
+    (EquipmentTypeId, GroupId, EquipmentId) [name: 'ecl_equipment_idx']
+    (ControlResult)            [name: 'ecl_result_idx']
+  }
+}
+
+/* =====================================
+   STATUS EVENTS + PROPERTIES
+   ===================================== */
+Table public.equipment_status_events {
+  Id                      uuid           [pk, not null, note: 'イベントID']
+  MessageName             message_name   [not null]
+  BuildingId              varchar(64)    [not null]
+  ContractId              varchar(64)    [not null]
+  ReportedDate            timestamptz    [not null]
+
+  FloorCode               varchar(8)
+  RoomNo                  varchar(16)
+  RoomNumber              int
+  RoomName                text
+
+  EquipmentTypeId         text
+  GroupId                 int
+  EquipmentId             int
+  EdgeManagedEquipmentId  text
+  EdgeDeviceId            text
+  AliveStatus             alive_status
+
+  EquipmentName           text
+  Maker                   text
+  ModelNumber             text
+  SerialNo                text
+
+  PeerId                  text
+  PeerIdBranch            text
+
+  DetectionDate           timestamptz
+  ErrorDate               timestamptz
+  ErrorCode               int
+  ErrorContent            text
+
+  CreatedDate             timestamptz     [not null, default: `now()`]
+  UpdatedDate             timestamptz     [not null, default: `now()`]
+  IsDelete                boolean         [not null, default: false]
+  DeletedDate             timestamptz
+
+  indexes {
+    (BuildingId, ReportedDate)               [name: 'ese_building_reported_idx']
+    (EquipmentTypeId, GroupId, EquipmentId)  [name: 'ese_equipment_idx']
+    (EdgeDeviceId, ReportedDate)             [name: 'ese_device_time_idx']
+    (MessageName)                            [name: 'ese_message_idx']
+  }
+}
+
+Table public.equipment_status_properties {
+  event_id              uuid     [not null, ref: > public.equipment_status_events.Id]
+  ordinal               smallint [not null, note: '1..10']
+  property_code         text
+  property_name         text
+  property_value        text
+  property_description  text
+
+  Note: 'イベントに付随する汎用プロパティ'
+  indexes {
+    (event_id) [name: 'esp_event_idx']
+    (event_id, ordinal) [name: 'esp_event_ordinal_pk', pk]
+  }
+}
+
+Table public.equipment_error_properties {
+  event_id                      uuid     [not null, ref: > public.equipment_status_events.Id]
+  ordinal                       smallint [not null, note: '1..5']
+  error_property_code           text
+  error_property_name           text
+  error_property_value          text
+  error_property_description    text
+
+  Note: 'エラー時の付加情報'
+  indexes {
+    (event_id) [name: 'eep_event_idx']
+    (event_id, ordinal) [name: 'eep_event_ordinal_pk', pk]
+  }
+}
+
+/* =====================================
+   Groups (optional)
+   ===================================== */
+TableGroup ControlLogs {
+  public.equipment_control_logs
+}
+TableGroup StatusEvents {
+  public.equipment_status_events
+  public.equipment_status_properties
+  public.equipment_error_properties
+}

@@ -1,0 +1,22 @@
+[project]
+name = "valuefromlog"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ipykernel>=7.1.0",
+    "jupytext>=1.18.1",
+    "matplotlib>=3.10.7",
+    "nbformat>=5.10.4",
+    "nbstripout>=0.8.2",
+    "openpyxl>=3.1.5",
+    "pandas>=2.3.3",
+    "pre-commit>=4.4.0",
+    "pyarrow>=22.0.0",
+    "pydantic>=2.12.3",
+    "seaborn>=0.13.2",
+    "setuptools>=80.9.0",
+    "sweetviz>=2.3.1",
+    "yamllint>=1.37.1",
+]
