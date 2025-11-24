@@ -1,4 +1,4 @@
-"""簡易 .env ローダーと環境値ヘルパー."""
+"""簡易 .env ローダーと環境値ヘルパー。"""
 from __future__ import annotations
 
 import os
@@ -9,7 +9,10 @@ from typing import List, Sequence
 def load_env_file(file_path: Path | None = None) -> None:
     """プロジェクト直下の .env を読み込み、未設定の環境変数だけを追加する。
 
-    シンプルな `KEY=VALUE` 形式（#で始まる行はコメント）をサポート。
+    Parameters
+    ----------
+    file_path : pathlib.Path or None, default None
+        読み込む .env パス。None の場合はプロジェクト直下の .env を探す。
     """
     if file_path is None:
         base = Path(__file__).resolve().parent.parent
@@ -31,7 +34,20 @@ def load_env_file(file_path: Path | None = None) -> None:
 
 
 def get_env_list(key: str, default: Sequence[str]) -> List[str]:
-    """環境変数をカンマ区切りリストとして取得。未設定時は default。"""
+    """環境変数をカンマ区切りリストとして取得する。
+
+    Parameters
+    ----------
+    key : str
+        環境変数名。
+    default : Sequence[str]
+        未設定時に返すデフォルト値。
+
+    Returns
+    -------
+    list[str]
+        環境変数の値をカンマ区切りで分割したリスト。未設定時は default をリスト化したもの。
+    """
     raw = os.getenv(key)
     if raw is None:
         return list(default)

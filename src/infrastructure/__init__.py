@@ -1,1 +1,4 @@
-# Infrastructure layer package marker
+"""インフラ層パッケージ。
+
+外部システムとの入出力実装をまとめる。
+"""

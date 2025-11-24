@@ -11,5 +11,4 @@ EXCEL_PATTERN = "★機器遠隔操作履歴＆機器状態変化履歴_*.xlsx"
 
 def list_input_files():
     """パターンに一致するExcelをソートして返す（mmddで新しい順判定に利用）。"""
-    print(DATA_DIR)
     return sorted(DATA_DIR.glob(EXCEL_PATTERN))
